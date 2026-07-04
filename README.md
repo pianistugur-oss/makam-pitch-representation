@@ -35,7 +35,15 @@ python scripts/02_run_idyom.py       # run IDyOM (6 analyses: 3 maqams × 2 repr
 python scripts/03_ir_model.py        # apply Schellenberg (1996) IR model
 python scripts/04_statistics.py      # piece-level and degree-level statistical tests
 python scripts/05_figures.py         # generate all figures
+python scripts/06_robustness_size_matched.py  # re-run group comparisons on size-matched
+                                              # subsamples (n = 88 per makam, 5 random seeds)
+                                              # to check robustness to corpus-size differences
+python scripts/07_bayes_equivalence_ir.py     # compute a JZS Bayes factor (BF₀₁) and TOST
+                                              # equivalence test for the implication–realization
+                                              # group comparison; requires pingouin
 ```
+
+Scripts 06 and 07 read from the IDyOM output files produced by scripts 01–02 and do not require re-running IDyOM.
 
 Edit the path constants at the top of each script to match your local setup before running.
 
