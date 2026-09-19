@@ -1,0 +1,16 @@
+maqam,n_pieces,factor,delta_factor,mean_total_dir,pct_of_total_dir
+Uşşak,117,Registral Direction,-0.0003294,0.0141343,-2.33
+Uşşak,117,Intervallic Difference,0.0133491,0.0141343,94.45
+Uşşak,117,Registral Return,-0.0002796,0.0141343,-1.98
+Uşşak,117,Proximity,0.0017444,0.0141343,12.34
+Uşşak,117,Closure,-0.0003503,0.0141343,-2.48
+Hüseyni,88,Registral Direction,-0.0004346,0.0132941,-3.27
+Hüseyni,88,Intervallic Difference,0.0151645,0.0132941,114.07
+Hüseyni,88,Registral Return,-0.0009046,0.0132941,-6.8
+Hüseyni,88,Proximity,-0.0001119,0.0132941,-0.84
+Hüseyni,88,Closure,-0.0004193,0.0132941,-3.15
+Nihâvend,128,Registral Direction,-8.38e-05,0.0109681,-0.76
+Nihâvend,128,Intervallic Difference,0.0067944,0.0109681,61.95
+Nihâvend,128,Registral Return,-0.0007387,0.0109681,-6.73
+Nihâvend,128,Proximity,0.00508,0.0109681,46.32
+Nihâvend,128,Closure,-8.38e-05,0.0109681,-0.76

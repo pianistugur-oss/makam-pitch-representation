@@ -19,9 +19,10 @@ from collections import defaultdict
 import numpy as np
 from scipy import stats as ss
 
-BASE   = Path("/Users/ugurozalp/makam_beklenti")
-OUTDIR = BASE / "data" / "idyom_output"
-FIGDIR = BASE / "figures"
+BASE    = Path("/Users/ugurozalp/makam_beklenti")   # local IDyOM output location; edit for your setup
+OUTDIR  = BASE / "data" / "idyom_output"
+FIGDIR  = Path(__file__).resolve().parent.parent / "figures"
+RESULTS = Path(__file__).resolve().parent.parent / "results"
 
 MAKAMS  = ["ussak", "huseyni", "nihavent"]
 LABELS  = {"ussak": "Uşşak", "huseyni": "Hüseyni", "nihavent": "Nihâvend"}
@@ -161,7 +162,7 @@ def task_a():
                 "distinct_pitches": n_distinct,
             })
 
-    out = BASE / "alphabet_sizes.csv"
+    out = RESULTS / "alphabet_sizes.csv"
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=["maqam", "arm", "pieces", "notes", "distinct_pitches"])
         w.writeheader()
@@ -271,7 +272,7 @@ def task_b():
     print(f"    p = {np.mean(kw_ps):.4f}  [{min(kw_ps):.4f}, {max(kw_ps):.4f}]")
 
     # ── CSV ───────────────────────────────────────────────────────────────────
-    out = BASE / "robustness_size_matched.csv"
+    out = RESULTS / "robustness_size_matched.csv"
     fields = ["seed", "maqam", "n", "mean_dic", "median_dic",
               "wilcox_W", "wilcox_p", "mw_U", "mw_p", "mw_d", "kw_H", "kw_p"]
     with open(out, "w", newline="") as f:

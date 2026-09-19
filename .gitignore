@@ -1,7 +1,10 @@
+*.dat
+*.dat.gz
+*.resample.gz
+data/SymbTr/
+__pycache__/
 .DS_Store
 .Rhistory
-__pycache__/
 *.pyc
 *.pyo
 data/idyom_output/
-figures/

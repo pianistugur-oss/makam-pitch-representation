@@ -1,0 +1,10 @@
+maqam,key,value,status
+Uşşak,obs_note_mean_dic,0.035242,valid
+Uşşak,E_uniform_H_analytic,0.966906,valid
+Uşşak,empirical_dH_baseline_1A,0.137776,valid
+Hüseyni,obs_note_mean_dic,0.047357,valid
+Hüseyni,E_uniform_H_analytic,0.529437,valid
+Hüseyni,empirical_dH_baseline_1A,0.152683,valid
+Nihâvend,obs_note_mean_dic,0.02237,valid
+Nihâvend,E_uniform_H_analytic,0.393105,valid
+Nihâvend,empirical_dH_baseline_1A,0.050105,valid

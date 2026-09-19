@@ -1,0 +1,16 @@
+test,metric,group,n1,n2,stat,df,p,d
+Wilcoxon,ΔIC,Uşşak,117,,1793.0,,6e-06,
+Wilcoxon,ΔIC,Hüseyni,88,,771.0,,1e-06,
+Wilcoxon,ΔIC,Nihâvend,128,,3200.0,,0.027319,
+Wilcoxon,ΔIR,Uşşak,117,,385.0,,0.0,
+Wilcoxon,ΔIR,Hüseyni,88,,451.0,,0.0,
+Wilcoxon,ΔIR,Nihâvend,128,,343.0,,0.0,
+Mann-Whitney,ΔIC,micro vs Nihâvend,205,128,15717.0,,0.00238,0.3668
+Mann-Whitney,ΔIR,micro vs Nihâvend,205,128,14661.0,,0.071452,0.2164
+Kruskal-Wallis,ΔIC,3 maqams,,,10.824,2,0.004463,
+Kruskal-Wallis,ΔIR,3 maqams,,,3.8954,2,0.142603,
+note_count,Koma53=312,Uşşak,6058,,,,,
+note_count,Koma53=313,Uşşak,801,,,,,
+note_count,Koma53=312,Hüseyni,3097,,,,,
+note_count,Koma53=313,Hüseyni,328,,,,,
+note_count,Koma53=313,Nihâvend,58,,,,,

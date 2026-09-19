@@ -17,9 +17,10 @@ import numpy as np
 from scipy import stats as ss
 import pingouin as pg
 
-BASE       = Path("/Users/ugurozalp/makam_beklenti")
-SYMBTR_DIR = Path("/Users/ugurozalp/Downloads/SymbTr-master/txt")
+BASE       = Path("/Users/ugurozalp/makam_beklenti")   # local IDyOM output location; edit for your setup
+SYMBTR_DIR = Path("/Users/ugurozalp/Downloads/SymbTr-master/txt")   # local SymbTr checkout; edit for your setup
 OUTDIR     = BASE / "data" / "idyom_output"
+RESULTS    = Path(__file__).resolve().parent.parent / "results"
 
 MAKAMS  = ["ussak", "huseyni", "nihavent"]
 LABELS  = {"ussak": "Uşşak", "huseyni": "Hüseyni", "nihavent": "Nihâvend"}
@@ -272,7 +273,7 @@ def main():
         "sesoi_d", "bound_raw", "df_tost",
         "p_tost_lower", "p_tost_upper", "p_tost_max", "tost_equiv",
     ]
-    out = BASE / "bayes_equivalence_ir.csv"
+    out = RESULTS / "bayes_equivalence_ir.csv"
     with open(out, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
