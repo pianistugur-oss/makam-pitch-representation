@@ -127,7 +127,7 @@ print(f"90th percentile |value| = {vmax_capped:.3f} -> display vmax "
 MARKED_NEW = [
     ("huseyni",  37, "2 commas above Acem"),
     ("nihavent", 36, "hisar"),
-    ("nihavent", 17, "segâh"),
+    ("nihavent", 17, "segah"),
 ]
 REFERENCE_DEGS_HUSEYNI = {35: "Acem", 36: "Dik Acem", 39: "Eviç"}
 
@@ -357,6 +357,13 @@ def validate_figure(fig, name):
     fig_bbox = fig.bbox
     boxes = []
     for ax in fig.axes:
+        # axis("off") axes (e.g. ax_ref) disable the whole tick/label subsystem
+        # at the Axes.draw() level regardless of each Text's own get_visible();
+        # their default-locator tick labels (e.g. an out-of-range "-5"/"25" from
+        # an unset x-tick locator) are never rendered, so skip them here rather
+        # than flag them as false-positive clipping.
+        if not getattr(ax, "axison", True):
+            continue
         candidates = list(ax.texts) + [ax.title, ax.xaxis.label, ax.yaxis.label]
         candidates += list(ax.get_xticklabels()) + list(ax.get_yticklabels())
         for t in candidates:

@@ -47,6 +47,26 @@ Hüseyni,"B (all -> kürdi, koma=312)",d7_orig,0.099676
 Hüseyni,"B (all -> kürdi, koma=312)",d7_variant,0.448308
 Hüseyni,"B (all -> kürdi, koma=312)",d8_orig,1.146471
 Hüseyni,"B (all -> kürdi, koma=312)",d8_variant,0.848904
+Uşşak,original,H_comma_given_tet71,0.558196
+Uşşak,original,tet71_composition_koma=312,6058
+Uşşak,original,tet71_composition_koma=313,801
+Uşşak,original,tet71_composition_koma=314,30
+Uşşak,"A (all -> segah, koma=313)",H_comma_given_tet71,0.040424
+Uşşak,"A (all -> segah, koma=313)",tet71_composition_koma=313,6859
+Uşşak,"A (all -> segah, koma=313)",tet71_composition_koma=314,30
+Uşşak,"B (all -> kürdi, koma=312)",H_comma_given_tet71,0.040424
+Uşşak,"B (all -> kürdi, koma=312)",tet71_composition_koma=312,6859
+Uşşak,"B (all -> kürdi, koma=312)",tet71_composition_koma=314,30
+Hüseyni,original,H_comma_given_tet71,0.510198
+Hüseyni,original,tet71_composition_koma=312,3097
+Hüseyni,original,tet71_composition_koma=313,328
+Hüseyni,original,tet71_composition_koma=314,23
+Hüseyni,"A (all -> segah, koma=313)",H_comma_given_tet71,0.057806
+Hüseyni,"A (all -> segah, koma=313)",tet71_composition_koma=313,3425
+Hüseyni,"A (all -> segah, koma=313)",tet71_composition_koma=314,23
+Hüseyni,"B (all -> kürdi, koma=312)",H_comma_given_tet71,0.057806
+Hüseyni,"B (all -> kürdi, koma=312)",tet71_composition_koma=312,3425
+Hüseyni,"B (all -> kürdi, koma=312)",tet71_composition_koma=314,23
 micro_vs_ctrl,"A (all -> segah, koma=313)",MW_U,15045.0
 micro_vs_ctrl,"A (all -> segah, koma=313)",MW_p,0.024327
 micro_vs_ctrl,"A (all -> segah, koma=313)",MW_d,0.3093

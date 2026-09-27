@@ -311,6 +311,44 @@ def analyze():
             csv_rows.append({"maqam":LABELS[makam],"variant":vname,"key":key,
                              "value": "" if v is None else round(float(v),6)})
 
+    # ═════════════════════════════════════════════════════════════════════════
+    # STEP 4 — H(comma | MIDI 71) and MIDI-71 class composition, before/after
+    # merge. Computed directly from note frequencies in the already-produced
+    # .dat output (original koma arm + each variant's koma arm) — no retraining.
+    # ═════════════════════════════════════════════════════════════════════════
+
+    def entropy_bits(counts):
+        total = sum(counts)
+        if total == 0: return float("nan")
+        return -sum((c/total)*np.log2(c/total) for c in counts if c > 0)
+
+    print("\n  H(comma | MIDI 71) and MIDI-71 composition, before/after merge:")
+    for m in ["ussak", "huseyni"]:
+        orig_komas = [cp for (cp, _ic) in orig_koma_dat[m].values() if koma_to_tet(cp) == 71]
+        orig_counts = Counter(orig_komas)
+        H_orig = entropy_bits(list(orig_counts.values()))
+        comp_str = ", ".join(f"{k}:{c}" for k, c in sorted(orig_counts.items()))
+        print(f"    {LABELS[m]:10s} original         H={H_orig:.4f}  composition={{{comp_str}}}")
+        csv_rows.append({"maqam": LABELS[m], "variant": "original",
+                         "key": "H_comma_given_tet71", "value": round(H_orig, 6)})
+        for koma_val, cnt in sorted(orig_counts.items()):
+            csv_rows.append({"maqam": LABELS[m], "variant": "original",
+                             "key": f"tet71_composition_koma={koma_val}", "value": cnt})
+
+        for target_deg, vname in [(8, "A (all -> segah, koma=313)"), (7, "B (all -> kürdi, koma=312)")]:
+            dsid, subdir, _ = VARIANTS[(m, target_deg)]
+            dv = read_dat_full(get_dat(OUTDIR / m / subdir))
+            var_komas = [cp for (cp, _ic) in dv.values() if koma_to_tet(cp) == 71]
+            var_counts = Counter(var_komas)
+            H_var = entropy_bits(list(var_counts.values()))
+            comp_str = ", ".join(f"{k}:{c}" for k, c in sorted(var_counts.items()))
+            print(f"    {LABELS[m]:10s} {vname:28s} H={H_var:.4f}  composition={{{comp_str}}}")
+            csv_rows.append({"maqam": LABELS[m], "variant": vname,
+                             "key": "H_comma_given_tet71", "value": round(H_var, 6)})
+            for koma_val, cnt in sorted(var_counts.items()):
+                csv_rows.append({"maqam": LABELS[m], "variant": vname,
+                                 "key": f"tet71_composition_koma={koma_val}", "value": cnt})
+
     print("\n  Micro-vs-control comparison (piece-level ΔIC under each variant):")
     ctrl_arr = np.array(list(orig_dic_piece["nihavent"].values()))
     for target_deg, vname in [(8, "A (all -> segah, koma=313)"), (7, "B (all -> kürdi, koma=312)")]:

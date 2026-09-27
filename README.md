@@ -84,9 +84,11 @@ python scripts/15_ir_factor_decomposition.py    # decomposition of ΔIR into the
 python scripts/16_alt_12tet_mapping.py          # alternative 12-TET mapping (SymbTr NotaAE
                                                  # simple-Western respelling) vs. round(K×12/53);
                                                  # a mapping-choice robustness check
+python scripts/17_piece_level_summary.py        # Table 1: piece-level ΔIC n/mean/median and
+                                                 # bootstrap 95% CI per makam
 ```
 
-Scripts `00`, `08`, `09`, `12`–`16` read from existing IDyOM output (or the raw SymbTr TXT files) and do not require re-running IDyOM. Scripts `10` and `11` retrain IDyOM from scratch on counterfactual/permuted corpora they build themselves; both accept `--skip-build` and `--skip-run` to reuse databases or `.dat` output from a previous run.
+Scripts `00`, `08`, `09`, `12`–`17` read from existing IDyOM output (or the raw SymbTr TXT files) and do not require re-running IDyOM. Scripts `10` and `11` retrain IDyOM from scratch on counterfactual/permuted corpora they build themselves; both accept `--skip-build` and `--skip-run` to reuse databases or `.dat` output from a previous run.
 
 Publication figure scripts live under `scripts/figures/` and read from the same IDyOM output as scripts `08`–`16`:
 
@@ -103,8 +105,10 @@ python scripts/figures/piece_violin_figure.py            # pub_violin_piece_dic_
 All CSV output lives in `results/`. All figures live in `figures/`.
 
 Two results files support specific robustness claims in the manuscript:
-- **`segah_prevalence.csv`** (written by script `12`) — supports the claim that segah (d=8) is only the majority neutral-second choice in a minority of Uşşak/Hüseyni pieces (most pieces favour kürdi, d=7 by a ~6–7× note-count margin), i.e. the comma-level distinction is corpus-variable, not an artefact of one dominant piece. `segah_prevalence.csv` recomputes this statistic from the raw SymbTr corpus (118 pieces) rather than the filtered IDyOM pipeline output (117 pieces); the qualitative result is unchanged.
+- **`segah_prevalence.csv`** (written by script `12`) — supports the claim that segah (d=8) is only the majority neutral-second choice in a minority of Uşşak/Hüseyni pieces (most pieces favour kürdi, d=7 by a ~7–8× note-count margin), i.e. the comma-level distinction is corpus-variable, not an artefact of one dominant piece. `segah_prevalence.csv` is computed on the same karar-mismatch-filtered corpus (117/88/128 pieces) as every other analysis in this repository (script `12`'s `load_corpus()` applies the same outlier filter as `01_preprocess.py`).
 - **`alt_mapping.csv`** (written by script `16`) — supports the robustness-to-mapping-choice claim: an alternative, notation-derived 12-TET assignment diverges from round(Koma53×12/53) for ~12–17% of Uşşak/Hüseyni notes (mainly the d=7/8 region), and the paper's qualitative pattern is checked against this alternative rather than assumed to depend on one rounding convention.
+
+`degree_context_analysis.csv`'s `section=7_adjacency_permutation` rows (script `12`) test adjacency/window co-occurrence against a within-piece permutation null (degree frequencies preserved, order shuffled); an earlier `section=7_triple_cooccur` measure was removed because it was circular (it included the target degree itself in the tested triple, trivially inflating the lift for windows centred on that same degree).
 
 ## Data
 

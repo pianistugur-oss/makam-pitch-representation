@@ -1,17 +1,27 @@
 """Co-occurrence tests for high-ΔIC degrees (Nihâvend d=36 hisar, d=17 segâh; Uşşak d=8 reference) against predicted companion degrees, plus segah/kürdi prevalence across the d=4-9 region."""
-import csv
+import csv, sqlite3
 from pathlib import Path
 from collections import Counter, defaultdict
 import numpy as np
 
 SYMBTR_DIR = Path("/Users/ugurozalp/Downloads/SymbTr-master/txt")   # local SymbTr checkout; edit for your setup
+BASE       = Path("/Users/ugurozalp/makam_beklenti")   # local IDyOM output location; edit for your setup
+OUTDIR     = BASE / "data" / "idyom_output"
 RESULTS    = Path(__file__).resolve().parent.parent / "results"
 WHOLE_TICKS = 384
 
 WINDOW = 16
 CLUSTER_GAP = 3   # max index-gap to count as "same run" in temporal clustering
 
-LABELS = {"ussak": "Uşşak", "huseyni": "Hüseyni", "nihavent": "Nihâvend"}
+LABELS  = {"ussak": "Uşşak", "huseyni": "Hüseyni", "nihavent": "Nihâvend"}
+DATASET = {"ussak": {"koma": 200, "tet12": 201},
+           "huseyni": {"koma": 202, "tet12": 203},
+           "nihavent": {"koma": 204, "tet12": 205}}
+
+# Same karar-mismatch outlier filter used by 01_preprocess.py to build the
+# IDyOM databases (117/88/128 pieces), so this script's TXT-based corpus
+# matches the corpus every .dat-based analysis in this repo is computed on.
+KARAR_MOD53 = {"ussak": 40, "huseyni": 40, "nihavent": 31}
 
 TARGETS = [
     ("nihavent", 36, "hisar",  [48]),
@@ -44,12 +54,15 @@ def parse_piece(path):
     return rows
 
 def load_corpus(makam):
-    """Returns {piece_name: [ {koma,dur,offset,idx,deg} ... ]}, karar per piece."""
+    """Returns {piece_name: [ {koma,dur,offset,idx,deg} ... ]}, karar per piece.
+    Applies the same karar-mismatch outlier filter as 01_preprocess.py so
+    denominators match the filtered corpus used by every .dat-based analysis."""
     pieces = {}
     for txt in sorted(SYMBTR_DIR.glob(f"{makam}--*.txt")):
         rows = parse_piece(txt)
         if len(rows) < 3: continue
         karar = rows[-1]["koma"]
+        if (karar % 53) != KARAR_MOD53[makam]: continue
         for i, r in enumerate(rows):
             r["idx"] = i
             r["deg"] = (r["koma"] - karar) % 53
@@ -265,6 +278,167 @@ for maqam, deg, name, companions in TARGETS:
         add(maqam, deg, "6_neighbours", f"prev_{rank}_degree={d}", c)
     for rank, (d, c) in enumerate(next_degs.most_common(5), 1):
         add(maqam, deg, "6_neighbours", f"next_{rank}_degree={d}", c)
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 7 (Uşşak/Hüseyni) — positive-piece counts: of the pieces containing d=8, how
+# many have a positive within-piece mean ΔIC restricted to their d=8 notes.
+# Needs actual IC values (not just koma/degree), so this reads the existing
+# koma/tet12 .dat output rather than the TXT files used above.
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _read_dat(p):
+    rows = []
+    with open(p) as f:
+        hdr = f.readline().split()
+        for line in f:
+            pts = line.split(); row = dict(zip(hdr, pts))
+            if row.get("cpitch.ic", "NA") == "NA": continue
+            rows.append({"mid": int(row["melody.id"]), "nid": int(row["note.id"]),
+                         "cp": int(row["cpitch"]), "ic": float(row["cpitch.ic"])})
+    return rows
+
+def _get_karar(makam):
+    db = OUTDIR / makam / "koma" / "idyom.db"
+    with sqlite3.connect(db) as c:
+        rows = c.execute("SELECT COMPOSITION_ID,CPITCH FROM mtp_event "
+                         "WHERE DATASET_ID=? ORDER BY COMPOSITION_ID,ONSET",
+                         (DATASET[makam]["koma"],)).fetchall()
+    last = {}
+    for cid, cp in rows: last[cid] = cp
+    return last
+
+def positive_piece_counts():
+    print("\n" + "="*70)
+    print("7. POSITIVE-PIECE COUNTS (d=8, pieces with within-piece mean ΔIC > 0)")
+    print("="*70)
+    for m in ["ussak", "huseyni"]:
+        dat_k = sorted((OUTDIR/m/"koma").glob("*.dat"))[0]
+        dat_t = sorted((OUTDIR/m/"tet12").glob("*.dat"))[0]
+        karar = _get_karar(m)
+        rk, rt = _read_dat(dat_k), _read_dat(dat_t)
+        idx_t = {(r["mid"], r["nid"]): r["ic"] for r in rt}
+        per_piece = defaultdict(list)
+        for r in rk:
+            ic_t = idx_t.get((r["mid"], r["nid"]))
+            if ic_t is None: continue
+            k = karar.get(r["mid"] - 1)
+            if k is None: continue
+            if (r["cp"] - k) % 53 == 8:
+                per_piece[r["mid"]].append(r["ic"] - ic_t)
+
+        n_with_d8 = len(per_piece)
+        n_positive = sum(1 for v in per_piece.values() if np.mean(v) > 0)
+        print(f"  {LABELS[m]:10s}  {n_positive}/{n_with_d8} pieces with d=8 have "
+              f"positive within-piece mean ΔIC")
+        add(LABELS[m], 8, "7_positive_pieces", "n_pieces_with_d8", n_with_d8)
+        add(LABELS[m], 8, "7_positive_pieces", "n_positive_mean_dic", n_positive)
+
+positive_piece_counts()
+
+# ═════════════════════════════════════════════════════════════════════════════
+# 7_adjacency_permutation — non-circular replacement for an earlier triple
+# {d=9,d=17,d=22} window co-occurrence measure that turned out to be circular
+# (the triple included the target degree itself, so windows centred on the
+# target trivially satisfied part of the tested condition, inflating the
+# lift by roughly an order of magnitude). Removed; replaced with adjacency
+# (or, for two tests, ±16-window) rates against a within-piece permutation
+# null (degree frequencies preserved, order shuffled, 1000 reps, seed=42).
+# ═════════════════════════════════════════════════════════════════════════════
+
+PERM_SEED, PERM_REPS = 42, 1000
+
+def _occurrence_rate(pieces, target_deg, companions, mode, window=WINDOW):
+    n_occ = n_hit = 0
+    for rows in pieces.values():
+        degs = [r["deg"] for r in rows]
+        n = len(degs)
+        for i, d in enumerate(degs):
+            if d != target_deg: continue
+            n_occ += 1
+            if mode == "adjacent":
+                neigh = []
+                if i > 0: neigh.append(degs[i-1])
+                if i < n-1: neigh.append(degs[i+1])
+                hit = any(c in neigh for c in companions)
+            else:  # "window"
+                lo, hi = max(0, i-window), min(n, i+window+1)
+                w = degs[lo:i] + degs[i+1:hi]
+                hit = any(c in w for c in companions)
+            if hit: n_hit += 1
+    return n_hit, n_occ
+
+def _permutation_null(pieces, target_deg, companions, mode, window=WINDOW,
+                       n_reps=PERM_REPS, seed=PERM_SEED):
+    degs_per_piece = [[r["deg"] for r in rows] for rows in pieces.values()
+                      if any(r["deg"] == target_deg for r in rows)]
+    rng = np.random.default_rng(seed)
+    null_rates = np.empty(n_reps)
+    for rep in range(n_reps):
+        n_occ = n_hit = 0
+        for degs in degs_per_piece:
+            shuf = rng.permutation(degs)
+            n = len(shuf)
+            for i, d in enumerate(shuf):
+                if d != target_deg: continue
+                n_occ += 1
+                if mode == "adjacent":
+                    neigh = []
+                    if i > 0: neigh.append(shuf[i-1])
+                    if i < n-1: neigh.append(shuf[i+1])
+                    hit = any(c in neigh for c in companions)
+                else:
+                    lo, hi = max(0, i-window), min(n, i+window+1)
+                    w = list(shuf[lo:i]) + list(shuf[i+1:hi])
+                    hit = any(c in w for c in companions)
+                if hit: n_hit += 1
+        null_rates[rep] = n_hit / n_occ if n_occ else float("nan")
+    return null_rates
+
+def run_adjacency_test(label, maqam_key, target_deg, comp_deg, mode, direction="enrich", window=WINDOW):
+    pieces = CORPUS[maqam_key]
+    n_hit, n_occ = _occurrence_rate(pieces, target_deg, [comp_deg], mode, window)
+    obs  = n_hit / n_occ if n_occ else float("nan")
+    null = _permutation_null(pieces, target_deg, [comp_deg], mode, window)
+    null_mean = float(np.nanmean(null))
+    lo, hi = np.nanpercentile(null, [2.5, 97.5])
+    ratio = obs / null_mean if null_mean > 0 else float("nan")
+    if direction == "enrich":
+        p = (int(np.sum(null >= obs)) + 1) / (len(null) + 1)
+    else:
+        p = (int(np.sum(null <= obs)) + 1) / (len(null) + 1)
+    print(f"  {label:34s} n={n_occ:4d}  obs={100*obs:5.1f}%  null_mean={100*null_mean:5.1f}%  "
+          f"null_CI=[{100*lo:5.1f}%,{100*hi:5.1f}%]  ratio={ratio:5.2f}x  p={p:.4f} ({direction})")
+    return dict(n=n_occ, obs_pct=round(100*obs,2), null_mean_pct=round(100*null_mean,2),
+                null_ci_lo_pct=round(100*lo,2), null_ci_hi_pct=round(100*hi,2),
+                ratio=round(ratio,2), p=round(p,4))
+
+def emit(maqam_label, target_deg, comp_deg, res):
+    prefix = f"comp{comp_deg}"
+    for k, v in [("n",res["n"]), ("obs_pct",res["obs_pct"]), ("null_mean_pct",res["null_mean_pct"]),
+                 ("null_ci_lo_pct",res["null_ci_lo_pct"]), ("null_ci_hi_pct",res["null_ci_hi_pct"]),
+                 ("ratio",res["ratio"]), ("p",res["p"])]:
+        add(maqam_label, target_deg, "7_adjacency_permutation", f"{prefix}_{k}", v)
+
+def adjacency_permutation_tests():
+    print("\n" + "="*70)
+    print("7_ADJACENCY_PERMUTATION — non-circular adjacency/window tests vs.")
+    print(f"within-piece permutation null ({PERM_REPS} reps, seed={PERM_SEED})")
+    print("="*70)
+
+    tests = [
+        ("a: Nihâvend d=17 -> adjacent d=22", "nihavent", 17, 22, "adjacent", "enrich"),
+        ("b: Nihâvend d=17 -> adjacent d=9",  "nihavent", 17, 9,  "adjacent", "enrich"),
+        ("c: Nihâvend d=36 -> adjacent d=31", "nihavent", 36, 31, "adjacent", "enrich"),
+        ("d: Nihâvend d=36 -> window d=48",   "nihavent", 36, 48, "window",   "enrich"),
+        ("e: Nihâvend d=17 -> window d=13 (depletion)", "nihavent", 17, 13, "window", "deplete"),
+        ("f1: Uşşak d=8 -> adjacent d=13",    "ussak",    8,  13, "adjacent", "enrich"),
+        ("f2: Uşşak d=8 -> adjacent d=0",     "ussak",    8,  0,  "adjacent", "enrich"),
+    ]
+    for label, maqam_key, target_deg, comp_deg, mode, direction in tests:
+        res = run_adjacency_test(label, maqam_key, target_deg, comp_deg, mode, direction)
+        emit(LABELS[maqam_key], target_deg, comp_deg, res)
+
+adjacency_permutation_tests()
 
 out = RESULTS / "degree_context_analysis.csv"
 with open(out, "w", newline="", encoding="utf-8") as f:
